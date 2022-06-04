@@ -11,22 +11,27 @@ async function main() {
   const browser = await playwright.chromium.launch({
     headless: false // setting this to true will not run the UI
   });
+  const context = await browser.newContext();
 
-  const page = await browser.newPage();
+  const pagezhad = await context.newPage();
 
   // 登录
-  await page.goto('https://one.ahu.edu.cn/');
-  await page.fill('#un', account.username);
-  await page.fill('#pd', account.password);
-  await page.click('#index_login_btn');
+  await pagezhad.goto('https://one.ahu.edu.cn/');
+  await pagezhad.fill('#un', account.username);
+  await pagezhad.fill('#pd', account.password);
+  await pagezhad.click('#index_login_btn');
 
   // 进入教务系统网站
-  await page.click('#common_app');
-  await page.click('a[appid="250915141496832"]')
+  await pagezhad.click('#common_app');
+  const [pagejwxt] = await Promise.all([
+    context.waitForEvent('page'),
+    pagezhad.click('a[appid="250915141496832"]')
+  ])
+  await pagejwxt.waitForLoadState();
 
-  // 课程表
+  // 输出网页标题
+  console.log(await pagejwxt.title());
 
-  await page.waitForTimeout(5000);
   await browser.close();
 }
 
